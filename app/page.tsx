@@ -6,17 +6,19 @@ export default function Home() {
       {/* Header/Navigation */}
       <header className="bg-[#1E2562]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-[120px] h-[120px] relative">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 relative">
                 <Image
                   src="/images/bidgeniuslogo.png"
                   alt="BidGenius AI Logo"
-                  fill
+                  width={64}
+                  height={64}
                   className="object-contain"
                   priority
                 />
               </div>
+              <span className="text-white text-2xl">BidGenius AI - <span className="text-[#99CCFF]">Intelligent RFP Automation</span></span>
             </div>
             <nav className="flex space-x-8">
               <a href="#features" className="text-white hover:text-blue-200">Features</a>
