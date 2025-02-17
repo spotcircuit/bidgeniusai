@@ -1,5 +1,32 @@
 import { RFPOpportunity, SearchParams } from '@/types/rfp';
 
+interface SAMApiResponse {
+  opportunityList: SAMOpportunity[];
+}
+
+interface SAMDetailResponse {
+  opportunity: SAMOpportunity;
+}
+
+interface SAMOpportunity {
+  noticeId: string;
+  title: string;
+  department: string;
+  postedDate: string;
+  responseDate: string;
+  description: string;
+  naicsCode?: string;
+  setAsideType?: string;
+  status: string;
+  resources?: SAMResource[];
+}
+
+interface SAMResource {
+  title: string;
+  url: string;
+  type: string;
+}
+
 export class SAMGovAPI {
   private apiKey: string;
   private baseUrl: string;
@@ -9,10 +36,10 @@ export class SAMGovAPI {
     this.baseUrl = 'https://api.sam.gov/opportunities/v2';
   }
 
-  private async fetchWithAuth(endpoint: string, params: Record<string, any>) {
+  private async fetchWithAuth<T>(endpoint: string, params: Record<string, string | undefined>): Promise<T> {
     const url = new URL(endpoint, this.baseUrl);
     Object.entries(params).forEach(([key, value]) => {
-      if (value) url.searchParams.append(key, value.toString());
+      if (value) url.searchParams.append(key, value);
     });
 
     const response = await fetch(url.toString(), {
@@ -40,9 +67,9 @@ export class SAMGovAPI {
         setAside: params.setAside,
       };
 
-      const data = await this.fetchWithAuth('/search', searchParams);
+      const data = await this.fetchWithAuth<SAMApiResponse>('/search', searchParams);
       
-      return data.opportunityList.map((opp: any) => ({
+      return data.opportunityList.map((opp) => ({
         id: opp.noticeId,
         title: opp.title,
         agency: opp.department,
@@ -51,9 +78,9 @@ export class SAMGovAPI {
         description: opp.description,
         naicsCode: opp.naicsCode,
         setAside: opp.setAsideType,
-        source: 'SAM.gov',
-        status: opp.status.toLowerCase(),
-        documents: opp.resources?.map((doc: any) => ({
+        source: 'SAM.gov' as const,
+        status: opp.status.toLowerCase() as 'active' | 'archived' | 'draft',
+        documents: opp.resources?.map((doc) => ({
           title: doc.title,
           url: doc.url,
           type: doc.type,
@@ -67,20 +94,21 @@ export class SAMGovAPI {
 
   async getOpportunityDetail(id: string): Promise<RFPOpportunity> {
     try {
-      const data = await this.fetchWithAuth(`/opportunity/${id}`, {});
+      const data = await this.fetchWithAuth<SAMDetailResponse>(`/opportunity/${id}`, {});
+      const opp = data.opportunity;
       
       return {
-        id: data.noticeId,
-        title: data.title,
-        agency: data.department,
-        postDate: data.postedDate,
-        responseDate: data.responseDate,
-        description: data.description,
-        naicsCode: data.naicsCode,
-        setAside: data.setAsideType,
-        source: 'SAM.gov',
-        status: data.status.toLowerCase(),
-        documents: data.resources?.map((doc: any) => ({
+        id: opp.noticeId,
+        title: opp.title,
+        agency: opp.department,
+        postDate: opp.postedDate,
+        responseDate: opp.responseDate,
+        description: opp.description,
+        naicsCode: opp.naicsCode,
+        setAside: opp.setAsideType,
+        source: 'SAM.gov' as const,
+        status: opp.status.toLowerCase() as 'active' | 'archived' | 'draft',
+        documents: opp.resources?.map((doc) => ({
           title: doc.title,
           url: doc.url,
           type: doc.type,

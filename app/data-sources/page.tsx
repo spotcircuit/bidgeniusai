@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 const DataSources = [
   {
     name: 'SAM.gov',
